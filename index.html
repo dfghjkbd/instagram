@@ -7,11 +7,19 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #fafafa;
-            text-align: center;
-            padding: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
         }
-        button {
+
+        h2 {
+            text-align: center;
+        }
+
+        #loginButton {
             background-color: #3897f0;
             color: white;
             padding: 10px 20px;
@@ -20,73 +28,72 @@
             cursor: pointer;
             font-size: 16px;
         }
-        button:hover {
-            background-color: #2879d8;
+
+        #loginButton:hover {
+            background-color: #287dc1;
         }
+
         #businessInfo {
             margin-top: 20px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <h2>Login with Instagram</h2>
-    <button onclick="instagramLogin()">Login with Instagram</button>
-    <div id="businessInfo"></div>
+<h2>Login with Instagram Business Account</h2>
+<button id="loginButton">Login with Instagram</button>
 
-    <script>
-        const appId = '1062737902168653'; // Your Instagram App ID
-        const redirectUri = 'https://dfghjkbd.github.io/mytest/'; // Your Redirect URI
-        const clientSecret = 'f6e7a05b8143b26c1be10809443b650b'; // Your App Secret
+<!-- Div to display business account info -->
+<div id="businessInfo"></div>
 
-        function instagramLogin() {
-            const authUrl = `https://www.instagram.com/oauth/authorize?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=user_profile,user_media`;
+<script>
+    document.getElementById('loginButton').onclick = function() {
+        const clientId = '1062737902168653'; // Your Instagram App ID
+        const redirectUri = encodeURIComponent('https://dfghjkbd.github.io/mytest/'); // Your redirect URI
+        const scope = 'business_basic,business_manage_messages,business_manage_comments,business_content_publish';
+        const instagramAuthUrl = `https://api.instagram.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${encodeURIComponent(scope)}`;
+        window.location.href = instagramAuthUrl;
+    }
 
-            window.location.href = authUrl;
-        }
+    // Function to display business account info
+    function displayBusinessInfo(businessInfo) {
+        const infoDiv = document.getElementById('businessInfo');
+        infoDiv.innerHTML = `
+            <p><strong>Account ID:</strong> ${businessInfo.id}</p>
+            <p><strong>Username:</strong> ${businessInfo.username}</p>
+            <p><strong>Account Type:</strong> ${businessInfo.account_type}</p>
+            <p><strong>Media Count:</strong> ${businessInfo.media_count}</p>
+        `;
+    }
 
-        function getQueryParam(param) {
-            const params = new URLSearchParams(window.location.search);
-            return params.get(param);
-        }
+    // Check if the URL contains an authorization code
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
 
-        async function exchangeCodeForToken(code) {
-            const response = await fetch('https://api.instagram.com/oauth/access_token', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `client_id=${appId}&client_secret=${clientSecret}&grant_type=authorization_code&redirect_uri=${encodeURIComponent(redirectUri)}&code=${code}`
-            });
-
-            const data = await response.json();
-            return data.access_token;
-        }
-
-        async function getBusinessInfo(accessToken) {
-            const response = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`);
-            const data = await response.json();
-
-            displayBusinessInfo(data);
-        }
-
-        function displayBusinessInfo(businessInfo) {
-            const infoDiv = document.getElementById('businessInfo');
-            infoDiv.innerHTML = `
-                <p><strong>Account ID:</strong> ${businessInfo.id}</p>
-                <p><strong>Username:</strong> ${businessInfo.username}</p>
-            `;
-        }
-
-        (async function() {
-            const code = getQueryParam('code');
-
-            if (code) {
-                const accessToken = await exchangeCodeForToken(code);
-                await getBusinessInfo(accessToken);
+    if (code) {
+        // Send the authorization code to the server to exchange it for an access token
+        fetch('https://your-server.com/exchange-token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code: code, redirect_uri: 'https://dfghjkbd.github.io/mytest/' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.access_token) {
+                // Fetch business account info using the access token
+                fetch(`https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${data.access_token}`)
+                    .then(response => response.json())
+                    .then(businessInfo => {
+                        displayBusinessInfo(businessInfo);
+                    });
             }
-        })();
-    </script>
+        })
+        .catch(error => console.error('Error exchanging code:', error));
+    }
+</script>
 
 </body>
 </html>
