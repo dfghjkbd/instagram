@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        .login-container h2 {
+            margin-bottom: 20px;
+        }
+        .login-container button {
+            background-color: #3897f0;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .login-container button:hover {
+            background-color: #287dc1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Login with Instagram</h2>
+    <button onclick="redirectToInstagram()">Login</button>
+</div>
+
+<script>
+    const CLIENT_ID = '1062737902168653'; // Your Instagram App ID
+    const REDIRECT_URI = 'https://dfghjkbd.github.io/mytest/details.html'; // Your Redirect URI (pointing to the details page)
+    const SCOPES = 'business_basic,business_manage_messages,business_manage_comments,business_content_publish';
+
+    function redirectToInstagram() {
+        const authURL = `https://www.instagram.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${SCOPES}`;
+        window.location.href = authURL;
+    }
+</script>
+
+</body>
+</html>
