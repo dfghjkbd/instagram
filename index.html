@@ -53,7 +53,9 @@
     const SCOPES = 'user_profile,user_media';
 
     function redirectToInstagram() {
-        const authURL = `https://api.instagram.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${SCOPES}`;
+       
+    const authURL = `https://api.instagram.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${SCOPES}`;
+         console.log('Redirect URL:', authURL); // Log
         window.location.href = authURL;
     }
 </script>
