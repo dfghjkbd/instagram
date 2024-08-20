@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Callback</title>
+</head>
+<body>
+
+<h2>Processing Login</h2>
+<p id="status">Please wait...</p>
+
+<script>
+    const CLIENT_ID = '1062737902168653'; // Your Instagram App ID
+    const CLIENT_SECRET = 'f6e7a05b8143b26c1be10809443b650b'; // Your Instagram App Secret
+    const REDIRECT_URI = 'https://your-username.github.io/your-repository/callback.html'; // Your Redirect URI
+
+    function getQueryParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    function exchangeCodeForToken(code) {
+        const url = 'https://api.instagram.com/oauth/access_token';
+        const data = new URLSearchParams({
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET,
+            grant_type: 'authorization_code',
+            redirect_uri: REDIRECT_URI,
+            code: code
+        });
+
+        fetch(url, {
+            method: 'POST',
+            body: data
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.access_token) {
+                sessionStorage.setItem('access_token', data.access_token);
+                window.location.href = 'details.html'; // Redirect to details.html
+            } else {
+                document.getElementById('status').innerText = 'Failed to authenticate.';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('status').innerText = 'An error occurred.';
+        });
+    }
+
+    window.onload = function() {
+        const code = getQueryParameter('code');
+        if (code) {
+            exchangeCodeForToken(code);
+        } else {
+            document.getElementById('status').innerText = 'No authorization code found.';
+        }
+    };
+</script>
+
+</body>
+</html>
