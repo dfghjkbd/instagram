@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Login</title>
+    <style>
+        button {
+            background-color: #E1306C;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h2 {
+            color: #E1306C;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Login to Instagram</h2>
+
+    <!-- Display the user's profile info -->
+    <p id="profile"></p>
+
+    <!-- Button to trigger Instagram login -->
+    <button onclick="initiateInstagramLogin()">Login with Instagram</button>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+    function initiateInstagramLogin() {
+        // Placeholder for initiating Instagram login
+        document.getElementById("profile").innerHTML = "Instagram login initiated...";
+    }
+
+    function logout() {
+        // Placeholder for logging out
+        document.getElementById("profile").innerHTML = "You have logged out.";
+    }
+</script>
+
+</body>
+</html>
