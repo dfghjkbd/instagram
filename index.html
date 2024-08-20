@@ -3,51 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Login</title>
+    <title>Instagram Business Login</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
         button {
-            background-color: #E1306C;
+            background-color: #4267b2;
             color: white;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin: 10px;
         }
-        .login-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        h2 {
-            color: #E1306C;
+        #businessInfo {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-<div class="login-container">
-    <h2>Login to Instagram</h2>
+<h2>Instagram Business Login</h2>
 
-    <!-- Display the user's profile info -->
-    <p id="profile"></p>
+<!-- Button to trigger Instagram login -->
+<button onclick="loginWithInstagram()">Login with Instagram</button>
+<button id="logoutButton" style="display:none;" onclick="logout()">Logout</button>
 
-    <!-- Button to trigger Instagram login -->
-    <button onclick="initiateInstagramLogin()">Login with Instagram</button>
-    <button onclick="logout()">Logout</button>
-</div>
+<!-- Display Instagram business account info -->
+<div id="businessInfo"></div>
 
+<!-- Facebook SDK for JavaScript -->
 <script>
-    function initiateInstagramLogin() {
-        // Placeholder for initiating Instagram login
-        document.getElementById("profile").innerHTML = "Instagram login initiated...";
-    }
+  // Load the Facebook SDK
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) { return; }
+    js = d.createElement(s); js.id = id;
+    js.src = "https://connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
 
-    function logout() {
-        // Placeholder for logging out
-        document.getElementById("profile").innerHTML = "You have logged out.";
-    }
+  // Initialize the Facebook SDK
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1062737902168653', // Your Facebook App ID
+      cookie     : true,
+      xfbml      : true,
+      version    : 'v20.0' // Use the latest version
+    });
+
+    // Check login status and update UI
+    FB.getLoginStatus(function(response) {
+      if (response.status === 'connected') {
+        document.getElementById('logoutButton').style.display = 'inline-block';
+        getInstagramBusinessAccount();
+      } else {
+        document.getElementById('businessInfo').innerHTML = "Please log in to view Instagram Business account details.";
+      }
+    });
+  };
+
+  // Login with Instagram
+  function loginWithInstagram() {
+    FB.login(function(response) {
+      if (response.authResponse) {
+        console.log('Logged in successfully.');
+        document.getElementById('logoutButton').style.display = 'inline-block';
+        getInstagramBusinessAccount();
+      } else {
+        console.log('User cancelled login or did not fully authorize.');
+      }
+    }, {scope: 'instagram_basic, instagram_manage_insights'});
+  }
+
+  // Fetch Instagram Business Account details
+  function getInstagramBusinessAccount() {
+    FB.api('/me/accounts', function(response) {
+      if (response && !response.error) {
+        // Find the Instagram Business Account from the response
+        var pages = response.data;
+        for (var i = 0; i < pages.length; i++) {
+          if (pages[i].instagram_business_account) {
+            var businessAccount = pages[i].instagram_business_account;
+            displayBusinessInfo(businessAccount);
+          }
+        }
+      } else {
+        console.error(response.error);
+        document.getElementById('businessInfo').innerHTML = "Failed to retrieve Instagram Business account information.";
+      }
+    });
+  }
+
+  // Display Instagram Business Account info
+  function displayBusinessInfo(businessAccount) {
+    // Example data, adjust based on actual API response
+    const infoDiv = document.getElementById('businessInfo');
+    infoDiv.innerHTML = `
+      <p><strong>Account ID:</strong> ${businessAccount.id}</p>
+      <p><strong>Username:</strong> ${businessAccount.username}</p>
+      <p><strong>Account Type:</strong> ${businessAccount.account_type}</p>
+      <p><strong>Media Count:</strong> ${businessAccount.media_count}</p>
+    `;
+  }
+
+  // Logout function
+  function logout() {
+    FB.logout(function(response) {
+      if (response && !response.error) {
+        console.log('Logged out successfully.');
+        document.getElementById('businessInfo').innerHTML = "You have logged out.";
+        document.getElementById('logoutButton').style.display = 'none';
+      } else {
+        console.error('Logout failed:', response.error);
+      }
+    });
+  }
 </script>
 
 </body>
