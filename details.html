@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .details-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+        }
+        .details-container h2 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="details-container">
+    <h2>Your Instagram Details</h2>
+    <div id="businessInfo"></div>
+</div>
+
+<script>
+    const CLIENT_ID = '1062737902168653'; // Your Instagram App ID
+    const CLIENT_SECRET = 'f6e7a05b8143b26c1be10809443b650b'; // Your Instagram App Secret
+    const REDIRECT_URI = 'https://dfghjkbd.github.io/mytest/details.html'; // Your Redirect URI (this page URL)
+
+    function getAccessToken(code) {
+        const url = 'https://api.instagram.com/oauth/access_token';
+        const data = new URLSearchParams({
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET,
+            grant_type: 'authorization_code',
+            redirect_uri: REDIRECT_URI,
+            code: code
+        });
+
+        fetch(url, {
+            method: 'POST',
+            body: data
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.access_token) {
+                fetchBusinessInfo(data.access_token);
+            } else {
+                console.error('Failed to get access token:', data);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function fetchBusinessInfo(accessToken) {
+        const url = `https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${accessToken}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const infoDiv = document.getElementById('businessInfo');
+                infoDiv.innerHTML = `
+                    <p><strong>Account ID:</strong> ${data.id}</p>
+                    <p><strong>Username:</strong> ${data.username}</p>
+                    <p><strong>Account Type:</strong> ${data.account_type}</p>
+                    <p><strong>Media Count:</strong> ${data.media_count}</p>
+                `;
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function getQueryParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    window.onload = function() {
+        const code = getQueryParameter('code');
+        if (code) {
+            getAccessToken(code);
+        }
+    };
+</script>
+
+</body>
+</html>
