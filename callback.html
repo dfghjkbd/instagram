@@ -28,6 +28,9 @@
 
         fetch(url, {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
             body: data
         })
         .then(response => response.json())
@@ -35,10 +38,13 @@
             if (data.access_token) {
                 fetchBusinessInfo(data.access_token);
             } else {
-                document.getElementById('info').innerHTML = 'Failed to get access token.';
+                document.getElementById('info').innerHTML = 'Failed to get access token. Response: ' + JSON.stringify(data);
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('info').innerHTML = 'An error occurred. Please check the console for details.';
+        });
     }
 
     function fetchBusinessInfo(accessToken) {
@@ -47,14 +53,21 @@
         fetch(url)
             .then(response => response.json())
             .then(data => {
-                document.getElementById('info').innerHTML = `
-                    <p><strong>Account ID:</strong> ${data.id}</p>
-                    <p><strong>Username:</strong> ${data.username}</p>
-                    <p><strong>Account Type:</strong> ${data.account_type}</p>
-                    <p><strong>Media Count:</strong> ${data.media_count}</p>
-                `;
+                if (data.id) {
+                    document.getElementById('info').innerHTML = `
+                        <p><strong>Account ID:</strong> ${data.id}</p>
+                        <p><strong>Username:</strong> ${data.username}</p>
+                        <p><strong>Account Type:</strong> ${data.account_type}</p>
+                        <p><strong>Media Count:</strong> ${data.media_count}</p>
+                    `;
+                } else {
+                    document.getElementById('info').innerHTML = 'Failed to fetch user details. Response: ' + JSON.stringify(data);
+                }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('info').innerHTML = 'An error occurred while fetching business info.';
+            });
     }
 
     function getQueryParameter(name) {
