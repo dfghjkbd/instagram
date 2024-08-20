@@ -7,20 +7,16 @@
 </head>
 <body>
 
-<h2>Processing Login</h2>
-<p id="status">Please wait...</p>
+<h2>Instagram Callback</h2>
+
+<div id="info"></div>
 
 <script>
     const CLIENT_ID = '1062737902168653'; // Your Instagram App ID
     const CLIENT_SECRET = 'f6e7a05b8143b26c1be10809443b650b'; // Your Instagram App Secret
     const REDIRECT_URI = 'https://dfghjkbd.github.io/mytest/callback.html'; // Your Redirect URI
 
-    function getQueryParameter(name) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(name);
-    }
-
-    function exchangeCodeForToken(code) {
+    function getAccessToken(code) {
         const url = 'https://api.instagram.com/oauth/access_token';
         const data = new URLSearchParams({
             client_id: CLIENT_ID,
@@ -37,24 +33,41 @@
         .then(response => response.json())
         .then(data => {
             if (data.access_token) {
-                sessionStorage.setItem('access_token', data.access_token);
-                window.location.href = 'details.html'; // Redirect to details.html
+                fetchBusinessInfo(data.access_token);
             } else {
-                document.getElementById('status').innerText = 'Failed to authenticate.';
+                document.getElementById('info').innerHTML = 'Failed to get access token.';
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('status').innerText = 'An error occurred.';
-        });
+        .catch(error => console.error('Error:', error));
+    }
+
+    function fetchBusinessInfo(accessToken) {
+        const url = `https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${accessToken}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('info').innerHTML = `
+                    <p><strong>Account ID:</strong> ${data.id}</p>
+                    <p><strong>Username:</strong> ${data.username}</p>
+                    <p><strong>Account Type:</strong> ${data.account_type}</p>
+                    <p><strong>Media Count:</strong> ${data.media_count}</p>
+                `;
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function getQueryParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
     }
 
     window.onload = function() {
         const code = getQueryParameter('code');
         if (code) {
-            exchangeCodeForToken(code);
+            getAccessToken(code);
         } else {
-            document.getElementById('status').innerText = 'No authorization code found.';
+            document.getElementById('info').innerHTML = 'No authorization code found.';
         }
     };
 </script>
