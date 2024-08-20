@@ -54,7 +54,7 @@
 
     function redirectToInstagram() {
        
-    const authURL = `https://api.instagram.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${SCOPES}`;
+    const authURL = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=514044351171054&redirect_uri=https://dfghjkbd.github.io/mytest/callback.html&response_type=code&scope=business_basic%2Cbusiness_manage_messages%2Cbusiness_manage_comments%2Cbusiness_content_publish`;
          console.log('Redirect URL:', authURL); // Log
         window.location.href = authURL;
     }
