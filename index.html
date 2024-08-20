@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Login</title>
+    <title>Instagram Integration</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,7 +14,7 @@
             height: 100vh;
             margin: 0;
         }
-        .login-container {
+        .container {
             background-color: white;
             padding: 20px;
             border-radius: 8px;
@@ -22,10 +22,10 @@
             width: 300px;
             text-align: center;
         }
-        .login-container h2 {
+        .container h2 {
             margin-bottom: 20px;
         }
-        .login-container button {
+        .container button {
             background-color: #3897f0;
             color: white;
             padding: 10px;
@@ -35,20 +35,30 @@
             width: 100%;
             margin-top: 10px;
         }
-        .login-container button:hover {
+        .container button:hover {
             background-color: #287dc1;
+        }
+        #info {
+            margin-top: 20px;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
 
-<div class="login-container">
+<div class="container" id="login-container">
     <h2>Login with Instagram</h2>
     <button onclick="redirectToInstagram()">Login</button>
 </div>
 
+<div class="container" id="info-container" style="display: none;">
+    <h2>Instagram Callback</h2>
+    <div id="info"></div>
+</div>
+
 <script>
     const CLIENT_ID = '1062737902168653'; // Your Instagram App ID
+    const CLIENT_SECRET = 'f6e7a05b8143b26c1be10809443b650b'; // Your Instagram App Secret
     const REDIRECT_URI = 'https://dfghjkbd.github.io/mytest/callback.html'; // Your Redirect URI
     const SCOPES = 'user_profile,user_media';
 
@@ -57,6 +67,74 @@
         console.log('Redirecting to URL:', authURL); // Log the URL to verify correctness
         window.location.href = authURL;
     }
+
+    function getAccessToken(code) {
+        const url = 'https://api.instagram.com/oauth/access_token';
+        const data = new URLSearchParams({
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET,
+            grant_type: 'authorization_code',
+            redirect_uri: REDIRECT_URI,
+            code: code
+        });
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.access_token) {
+                fetchBusinessInfo(data.access_token);
+            } else {
+                document.getElementById('info').innerHTML = 'Failed to get access token. Response: ' + JSON.stringify(data);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('info').innerHTML = 'An error occurred. Please check the console for details.';
+        });
+    }
+
+    function fetchBusinessInfo(accessToken) {
+        const url = `https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${accessToken}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.id) {
+                    document.getElementById('info').innerHTML = `
+                        <p><strong>Account ID:</strong> ${data.id}</p>
+                        <p><strong>Username:</strong> ${data.username}</p>
+                        <p><strong>Account Type:</strong> ${data.account_type}</p>
+                        <p><strong>Media Count:</strong> ${data.media_count}</p>
+                    `;
+                } else {
+                    document.getElementById('info').innerHTML = 'Failed to fetch user details. Response: ' + JSON.stringify(data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('info').innerHTML = 'An error occurred while fetching business info.';
+            });
+    }
+
+    function getQueryParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    window.onload = function() {
+        const code = getQueryParameter('code');
+        if (code) {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('info-container').style.display = 'block';
+            getAccessToken(code);
+        }
+    };
 </script>
 
 </body>
