@@ -22,6 +22,9 @@
             width: 300px;
             text-align: center;
         }
+        .login-container h2 {
+            margin-bottom: 20px;
+        }
         .login-container button {
             background-color: #3897f0;
             color: white;
@@ -47,7 +50,7 @@
 <script>
     const CLIENT_ID = '1062737902168653'; // Your Instagram App ID
     const REDIRECT_URI = 'https://dfghjkbd.github.io/mytest/callback.html'; // Your Redirect URI
-    const SCOPES = 'user_profile,user_media'; // Adjust scopes as needed
+    const SCOPES = 'user_profile,user_media';
 
     function redirectToInstagram() {
         const authURL = `https://api.instagram.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${SCOPES}`;
