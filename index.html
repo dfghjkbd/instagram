@@ -3,96 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Business Login</title>
+    <title>Instagram Login</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
         }
-
-        h2 {
+        .login-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
             text-align: center;
         }
-
-        #loginButton {
+        .login-container h2 {
+            margin-bottom: 20px;
+        }
+        .login-container button {
             background-color: #3897f0;
             color: white;
-            padding: 10px 20px;
+            padding: 10px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
         }
-
-        #loginButton:hover {
+        .login-container button:hover {
             background-color: #287dc1;
         }
-
-        #businessInfo {
+        .info-container {
             margin-top: 20px;
-            font-size: 14px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-<h2>Login with Instagram Business Account</h2>
-<button id="loginButton">Login with Instagram</button>
+<div class="login-container">
+    <h2>Login with Instagram</h2>
+    <button onclick="redirectToInstagram()">Login</button>
+</div>
 
-<!-- Div to display business account info -->
-<div id="businessInfo"></div>
+<div class="info-container" id="businessInfo"></div>
 
 <script>
-    document.getElementById('loginButton').onclick = function() {
-        const clientId = '1062737902168653'; // Your Instagram App ID
-        const redirectUri = encodeURIComponent('https://dfghjkbd.github.io/mytest/'); // Your redirect URI
-        const scope = 'business_basic,business_manage_messages,business_manage_comments,business_content_publish';
-        const instagramAuthUrl = `https://api.instagram.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${encodeURIComponent(scope)}`;
-        window.location.href = instagramAuthUrl;
+    const CLIENT_ID = '1062737902168653'; // Your Instagram App ID
+    const REDIRECT_URI = 'https://dfghjkbd.github.io/mytest/'; // Your Redirect URI
+    const SCOPES = 'business_basic,business_manage_messages,business_manage_comments,business_content_publish';
+
+    function redirectToInstagram() {
+        const authURL = `https://www.instagram.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${SCOPES}`;
+        window.location.href = authURL;
     }
 
-    // Function to display business account info
-    function displayBusinessInfo(businessInfo) {
-        const infoDiv = document.getElementById('businessInfo');
-        infoDiv.innerHTML = `
-            <p><strong>Account ID:</strong> ${businessInfo.id}</p>
-            <p><strong>Username:</strong> ${businessInfo.username}</p>
-            <p><strong>Account Type:</strong> ${businessInfo.account_type}</p>
-            <p><strong>Media Count:</strong> ${businessInfo.media_count}</p>
-        `;
-    }
+    function getAccessToken(code) {
+        const url = 'https://api.instagram.com/oauth/access_token';
+        const data = new URLSearchParams({
+            client_id: CLIENT_ID,
+            client_secret: 'f6e7a05b8143b26c1be10809443b650b', // Your Instagram App Secret
+            grant_type: 'authorization_code',
+            redirect_uri: REDIRECT_URI,
+            code: code
+        });
 
-    // Check if the URL contains an authorization code
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-
-    if (code) {
-        // Send the authorization code to the server to exchange it for an access token
-        fetch('https://your-server.com/exchange-token', {
+        fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ code: code, redirect_uri: 'https://dfghjkbd.github.io/mytest/' })
+            body: data
         })
         .then(response => response.json())
         .then(data => {
             if (data.access_token) {
-                // Fetch business account info using the access token
-                fetch(`https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${data.access_token}`)
-                    .then(response => response.json())
-                    .then(businessInfo => {
-                        displayBusinessInfo(businessInfo);
-                    });
+                fetchBusinessInfo(data.access_token);
+            } else {
+                console.error('Failed to get access token:', data);
             }
         })
-        .catch(error => console.error('Error exchanging code:', error));
+        .catch(error => console.error('Error:', error));
     }
+
+    function fetchBusinessInfo(accessToken) {
+        const url = `https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${accessToken}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const infoDiv = document.getElementById('businessInfo');
+                infoDiv.innerHTML = `
+                    <p><strong>Account ID:</strong> ${data.id}</p>
+                    <p><strong>Username:</strong> ${data.username}</p>
+                    <p><strong>Account Type:</strong> ${data.account_type}</p>
+                    <p><strong>Media Count:</strong> ${data.media_count}</p>
+                `;
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function getQueryParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    window.onload = function() {
+        const code = getQueryParameter('code');
+        if (code) {
+            getAccessToken(code);
+        }
+    };
 </script>
 
 </body>
